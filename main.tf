@@ -19,6 +19,11 @@ resource "local_sensitive_file" "pem_file" {
   content = tls_private_key.pk.private_key_pem
 }
 
+resource "local_file" "inventory" {
+  content = "test"
+  filename = "${path.module}/inventory.ini"
+}
+
 provider "libvirt" {
   uri = "qemu:///system"
 }
