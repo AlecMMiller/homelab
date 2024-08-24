@@ -1,6 +1,6 @@
 ${hosts}
 
-[kube_control_plane]
+[kube-master]
 node-01
 node-02
 
@@ -9,9 +9,9 @@ node-01
 node-02
 node-03
 
-[kube_node]
+[kube-node]
 ${nodes}
 
 [k8s_cluster:children]
-kube_node
-kube_control_plane
+kube-node
+kube-master

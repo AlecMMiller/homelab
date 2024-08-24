@@ -24,7 +24,7 @@ data "template_file" "inventory" {
   vars = {
     hosts = join("\n", [
       for d in libvirt_domain.node: (
-        length(d.network_interface[0].addresses) > 0 ? "${d.network_interface[0].hostname} ansible_host=${d.network_interface[0].addresses[0]}" : ""
+        length(d.network_interface[0].addresses) > 0 ? "${d.network_interface[0].hostname} ansible_host=${d.network_interface[0].addresses[0]} ansible_user=ansible ansible_ssh_private_key_file=../key.pem" : ""
       )
     ])
     nodes = join("\n", [
@@ -65,6 +65,10 @@ resource "libvirt_network" "cluster" {
   name = "cluster"
 
   addresses = ["10.17.3.0/24"]
+
+  dns {
+    enabled = true
+  }
 }
 
 resource "libvirt_pool" "fedora" {
