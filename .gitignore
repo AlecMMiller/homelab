@@ -3,3 +3,4 @@
 **/.terraform/*
 key.pem
 inventory.ini
+artifacts/*
