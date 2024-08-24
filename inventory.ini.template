@@ -1,0 +1,17 @@
+${hosts}
+
+[kube_control_plane]
+node-01
+node-02
+
+[etcd]
+node-01
+node-02
+node-03
+
+[kube_node]
+${nodes}
+
+[k8s_cluster:children]
+kube_node
+kube_control_plane

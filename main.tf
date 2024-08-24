@@ -19,8 +19,24 @@ resource "local_sensitive_file" "pem_file" {
   content = tls_private_key.pk.private_key_pem
 }
 
+data "template_file" "inventory" {
+  template = file("${path.module}/inventory.ini.template")
+  vars = {
+    hosts = join("\n", [
+      for d in libvirt_domain.node: (
+        length(d.network_interface[0].addresses) > 0 ? "${d.network_interface[0].hostname} ansible_host=${d.network_interface[0].addresses[0]}" : ""
+      )
+    ])
+    nodes = join("\n", [
+      for d in libvirt_domain.node:(
+        "${d.network_interface[0].hostname}"
+      )
+    ])
+  }
+}
+
 resource "local_file" "inventory" {
-  content = "test"
+  content = "${data.template_file.inventory.rendered}"
   filename = "${path.module}/inventory.ini"
 }
 
@@ -37,7 +53,7 @@ resource "libvirt_volume" "fedora" {
 }
 
 variable "hosts" {
-  default = 1
+  default = 5
 }
 
 variable "hostname_format" {
