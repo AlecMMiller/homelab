@@ -4,6 +4,7 @@ in pkgs.mkShell {
   packages = with pkgs; [
     ansible
     opentofu
+    kubectl
     cdrtools
     (python3.withPackages (python-pkgs: [
       python-pkgs.jmespath
