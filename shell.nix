@@ -5,6 +5,7 @@ in pkgs.mkShell {
     ansible
     opentofu
     kubectl
+    kubernetes-helm
     cdrtools
     (python3.withPackages (python-pkgs: [
       python-pkgs.jmespath
