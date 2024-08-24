@@ -43,7 +43,7 @@ variable "hostname_format" {
 resource "libvirt_network" "cluster" {
   name = "cluster"
 
-  addresses = ["10.17.3.0/24", "2001:db8:ca2:2::1/64"]
+  addresses = ["10.17.3.0/24"]
 }
 
 resource "libvirt_pool" "fedora" {
