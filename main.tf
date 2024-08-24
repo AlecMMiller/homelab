@@ -8,6 +8,17 @@ terraform {
   }
 }
 
+resource "tls_private_key" "pk" {
+  algorithm = "RSA"
+  rsa_bits = 4096
+}
+
+resource "local_sensitive_file" "pem_file" {
+  filename = "${path.module}/key.pem"
+  file_permission = "600"
+  content = tls_private_key.pk.private_key_pem
+}
+
 provider "libvirt" {
   uri = "qemu:///system"
 }
@@ -43,6 +54,9 @@ resource "libvirt_pool" "fedora" {
 
 data "template_file" "user_data" {
   template = file("${path.module}/cloud_init.cfg")
+  vars = {
+    public_key = "${tls_private_key.pk.public_key_openssh}"
+  }
 }
 
 data "template_file" "network_config" {
