@@ -9,8 +9,10 @@ rke2_cluster:
   children:
     rke2_servers:
       vars:
+        manifest_config_file_path: "{{ playbook_dir }}/../../manifests/"
         rke2_config:
           cni: cilium
+          #manifest_config_file_path: "../manifests/"
           node-label:
             - serverGroupLabel=true
       hosts:
