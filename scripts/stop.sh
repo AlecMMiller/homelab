@@ -1,2 +1,0 @@
-cd tf
-tofu destroy

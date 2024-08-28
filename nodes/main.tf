@@ -27,6 +27,18 @@ resource "local_file" "inventory" {
   filename = "${path.module}/../inventory/hosts.yml"
 }
 
+data "template_file" "kubeconfig" {
+  template = file("${path.module}/getKubeconfig.template.sh")
+  vars = {
+    host = "${libvirt_domain.node[0].network_interface[0].addresses[0]}"
+  }
+}
+
+resource "local_file" "kubeconfig" {
+  content = "${data.template_file.kubeconfig.rendered}"
+  filename = "${path.module}/../scripts/getKubeconfig.sh"
+}
+
 resource "local_sensitive_file" "pem_file" {
   filename = "${path.module}/../key.pem"
   file_permission = "600"

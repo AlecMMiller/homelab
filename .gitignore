@@ -3,4 +3,6 @@
 **/.terraform/*
 key.pem
 inventory.ini
-artifacts/*
+kubeconfig.yml
+scripts/getKubeconfig.sh
+inventory/hosts.yml
