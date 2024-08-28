@@ -10,6 +10,7 @@ rke2_cluster:
     rke2_servers:
       vars:
         rke2_config:
+          cni: cilium
           node-label:
             - serverGroupLabel=true
       hosts:
