@@ -1,3 +1,9 @@
 [submodule "kubespray"]
 	path = kubespray
 	url = https://github.com/kubernetes-sigs/kubespray
+[submodule "rke2-ansible"]
+	path = rke2-ansible
+	url = https://github.com/rancherfederal/rke2-ansible
+[submodule "nodes/rke2-ansible"]
+	path = nodes/rke2-ansible
+	url = https://github.com/rancherfederal/rke2-ansible

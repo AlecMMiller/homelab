@@ -1,9 +1,7 @@
 terraform {
-  required_version = ">=0.13"
   required_providers {
     libvirt = {
       source = "dmacvicar/libvirt"
-      version = "0.6.14"
     }
   }
 }
@@ -13,23 +11,12 @@ resource "tls_private_key" "pk" {
   rsa_bits = 4096
 }
 
-resource "local_sensitive_file" "pem_file" {
-  filename = "${path.module}/key.pem"
-  file_permission = "600"
-  content = tls_private_key.pk.private_key_pem
-}
-
 data "template_file" "inventory" {
-  template = file("${path.module}/inventory.ini.template")
+  template = file("${path.module}/hosts.template.yml")
   vars = {
-    hosts = join("\n", [
-      for d in libvirt_domain.node: (
-        length(d.network_interface[0].addresses) > 0 ? "${d.network_interface[0].hostname} ansible_host=${d.network_interface[0].addresses[0]} ansible_user=ansible ansible_ssh_private_key_file=../key.pem" : ""
-      )
-    ])
     nodes = join("\n", [
       for d in libvirt_domain.node:(
-        "${d.network_interface[0].hostname}"
+        "        \"${d.network_interface[0].addresses[0]}\":\n          node_name: \"${d.network_interface[0].hostname}\"\n          ansible_host: \"${d.network_interface[0].addresses[0]}\"\n          node_ip: \"${d.network_interface[0].addresses[0]}\""
       )
     ])
   }
@@ -37,23 +24,29 @@ data "template_file" "inventory" {
 
 resource "local_file" "inventory" {
   content = "${data.template_file.inventory.rendered}"
-  filename = "${path.module}/inventory.ini"
+  filename = "${path.module}/../inventory/hosts.yml"
+}
+
+resource "local_sensitive_file" "pem_file" {
+  filename = "${path.module}/../key.pem"
+  file_permission = "600"
+  content = tls_private_key.pk.private_key_pem
 }
 
 provider "libvirt" {
   uri = "qemu:///system"
 }
 
-resource "libvirt_volume" "fedora" {
+resource "libvirt_volume" "os" {
   name = "fedora-${format(var.hostname_format, count.index + 1)}.qcow2"
   count = var.hosts
-  pool = libvirt_pool.fedora.name
+  pool = libvirt_pool.os.name
   source = "https://download.fedoraproject.org/pub/fedora/linux/releases/40/Cloud/x86_64/images/Fedora-Cloud-Base-Generic.x86_64-40-1.14.qcow2"
   format = "qcow2"
 }
 
 variable "hosts" {
-  default = 5
+  default = 3
 }
 
 variable "hostname_format" {
@@ -71,10 +64,10 @@ resource "libvirt_network" "cluster" {
   }
 }
 
-resource "libvirt_pool" "fedora" {
-  name = "fedora"
+resource "libvirt_pool" "os" {
+  name = "os"
   type = "dir"
-  path = "/tmp/terraform-provider-libvirt-pool-fedora"
+  path = "/tmp/terraform-provider-libvirt-pool"
 }
 
 data "template_file" "user_data" {
@@ -84,28 +77,23 @@ data "template_file" "user_data" {
   }
 }
 
-data "template_file" "network_config" {
-  template = file("${path.module}/network_config.cfg")
-}
-
 resource "libvirt_cloudinit_disk" "commoninit" {
   name = "commoninit.iso"
   user_data = data.template_file.user_data.rendered
-  network_config = data.template_file.network_config.rendered
-  pool = libvirt_pool.fedora.name
+  pool = libvirt_pool.os.name
 }
 
 resource "libvirt_domain" "node" {
   depends_on = [libvirt_network.cluster]
   count = var.hosts
-  name = format(var.hostname_format, count.index + 1)
+  name =  format(var.hostname_format, count.index + 1)
   vcpu = 4
   memory = 4096
 
   cloudinit = "${libvirt_cloudinit_disk.commoninit.id}"
 
   network_interface {
-    network_name = "cluster"
+    network_name = "${libvirt_network.cluster.name}"
     wait_for_lease = true
     hostname = format(var.hostname_format, count.index + 1)
   }
@@ -118,12 +106,12 @@ resource "libvirt_domain" "node" {
 
   console {
     type = "pty"
-    target_type = "virtio"
     target_port = "1"
+    target_type = "virtio"
   }
 
   disk {
-    volume_id = element(libvirt_volume.fedora.*.id, count.index)
+    volume_id = element(libvirt_volume.os.*.id, count.index)
   }
 
   graphics {
