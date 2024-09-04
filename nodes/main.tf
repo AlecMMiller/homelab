@@ -39,6 +39,18 @@ resource "local_file" "kubeconfig" {
   filename = "${path.module}/../scripts/getKubeconfig.sh"
 }
 
+data "template_file" "cilium" {
+  template = file("${path.module}/cilium.template.yml")
+  vars = {
+    node = "${libvirt_domain.node[0].network_interface[0].addresses[0]}"
+  }
+}
+
+resource "local_file" "cilium" {
+  content = "${data.template_file.cilium.rendered}"
+  filename = "${path.module}/../manifests/cilium.yml"
+}
+
 resource "local_sensitive_file" "pem_file" {
   filename = "${path.module}/../key.pem"
   file_permission = "600"

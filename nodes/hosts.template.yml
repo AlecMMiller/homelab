@@ -12,7 +12,7 @@ rke2_cluster:
         manifest_config_file_path: "{{ playbook_dir }}/../../manifests/"
         rke2_config:
           cni: cilium
-          #manifest_config_file_path: "../manifests/"
+          disable-kube-proxy: true
           node-label:
             - serverGroupLabel=true
       hosts:
