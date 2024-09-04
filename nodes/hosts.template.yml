@@ -11,6 +11,8 @@ rke2_cluster:
       vars:
         manifest_config_file_path: "{{ playbook_dir }}/../../manifests/"
         rke2_config:
+          disable:
+            rke2-ingress-nginx
           cni: cilium
           disable-kube-proxy: true
           node-label:
