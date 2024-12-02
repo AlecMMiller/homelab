@@ -7,3 +7,4 @@ kubeconfig.yml
 scripts/getKubeconfig.sh
 inventory/hosts.yml
 manifests/cilium.yml
+.direnv/
