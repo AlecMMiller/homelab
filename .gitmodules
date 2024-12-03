@@ -7,3 +7,6 @@
 [submodule "nodes/rke2-ansible"]
 	path = nodes/rke2-ansible
 	url = https://github.com/rancherfederal/rke2-ansible
+[submodule "local-path-provisioner"]
+	path = local-path-provisioner
+	url = https://github.com/rancher/local-path-provisioner.git
